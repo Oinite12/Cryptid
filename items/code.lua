@@ -1223,7 +1223,7 @@ local rework = {
 			return card.ability.set == "Joker"
 		end)
 		return #cards == 1
-			and not cards[1].ability.eternal
+			and not SMODS.is_eternal(cards[1])
 			and cards[1].ability.name
 				~= ("cry-meteor" or "cry-exoplanet" or "cry-stardust" or "cry_cursed" or ("Diet Cola" or Card.get_gameset(
 					card
@@ -1385,7 +1385,7 @@ local merge = {
 		if
 			#hand ~= 1
 			or #consumeables ~= 1
-			or consumeables[1].ability.eternal
+			or SMODS.is_eternal(consumeables[1])
 			or consumeables[1].ability.set == "Unique"
 		then
 			return false
@@ -1488,7 +1488,7 @@ local commit = {
 			return card.ability.set == "Joker" and not card.getting_sliced
 		end)
 		return #jokers == 1
-			and not jokers[1].ability.eternal
+			and not SMODS.is_eternal(jokers[1])
 			and not (type(jokers[1].config.center.rarity) == "number" and jokers[1].config.center.rarity >= 5)
 	end,
 	use = function(self, card, area, copier)
@@ -4202,8 +4202,9 @@ local alttab = {
 				ret = "???"
 			end
 		end
-		if next(SMODS.find_card("j_cry_kittyprinter")) then
-			ret = localize({ type = "name_text", key = "tag_cry_cat", set = "Tag" })
+		local tag = Cryptid.get_next_tag()
+		if tag then
+			ret = localize({ type = "name_text", key = tag, set = "Tag" })
 		end
 		return { vars = { ret } }
 	end,
@@ -4220,8 +4221,9 @@ local alttab = {
 				play_sound("tarot1")
 				local tag = nil
 				local type = G.GAME.blind:get_type()
-				if next(SMODS.find_card("j_cry_kittyprinter")) then
-					tag = Tag("tag_cry_cat")
+				local tag_key = Cryptid.get_next_tag()
+				if tag_Key then
+					tag = Tag(tag_key)
 				elseif type == "Boss" then
 					tag = Tag(get_next_tag_key())
 				else
@@ -4245,8 +4247,9 @@ local alttab = {
 					play_sound("tarot1")
 					local tag = nil
 					local type = G.GAME.blind:get_type()
-					if next(SMODS.find_card("j_cry_kittyprinter")) then
-						tag = Tag("tag_cry_cat")
+					local tag_key = Cryptid.get_next_tag()
+					if tag_key then
+						tag = Tag(tag_key)
 					elseif type == "Boss" then
 						tag = Tag(get_next_tag_key())
 					else
@@ -5026,7 +5029,7 @@ local cut = {
 				if
 					G.consumeables.cards[i].ability.set == "Code"
 					and not G.consumeables.cards[i].getting_sliced
-					and not G.consumeables.cards[i].ability.eternal
+					and not SMODS.is_eternal(G.consumeables.cards[i])
 				then
 					destructable_codecard[#destructable_codecard + 1] = G.consumeables.cards[i]
 				end

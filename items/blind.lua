@@ -663,11 +663,11 @@ local scorch = {
 			and (context.cardarea == G.play or context.cardarea == "unscored")
 			and not G.GAME.blind.disabled
 		then
-			return { remove = not context.destroy_card.ability.eternal }
+			return { remove = not SMODS.is_eternal(context.destroying_card) }
 		end
 		if context.discard and not G.GAME.blind.disabled then
 			for i, card in ipairs(G.hand.highlighted) do
-				return { remove = not card.ability.eternal }
+				return { remove = not SMODS.is_eternal(card) }
 			end
 		end
 	end,
@@ -925,31 +925,28 @@ local landlord = {
 	pos = { x = 0, y = 2 },
 	dollars = 5,
 	boss = {
-		min = 1,
+		min = 4,
 		max = 666666,
 	},
 	atlas = "blinds_two",
 	order = 26,
 	boss_colour = HEX("c89f13"),
-	calculate = function(self, blind, context)
-		if context.after then
-			local jokers = {}
-			for i, v in pairs(G.jokers.cards) do
-				if not v.ability.rental then
-					jokers[#jokers + 1] = v
-				end
+	debuff_hand = function(self, cards, hand, handname, check)
+		G.GAME.blind.triggered = false
+		local jokers = {}
+		for i, v in pairs(G.jokers.cards) do
+			if not v.ability.rental then
+				jokers[#jokers + 1] = v
 			end
-			if #jokers > 0 then
-				G.E_MANAGER:add_event(Event({
-					func = function()
-						local joker = pseudorandom_element(jokers, pseudoseed("cry_landlord"))
-						joker.ability.rental = true
-						joker:juice_up()
-						return true
-					end,
-				}))
-			end
+		end
+		if #jokers > 0 then
 			G.GAME.blind.triggered = true
+			if not check then
+				local joker = pseudorandom_element(jokers, pseudoseed("cry_landlord"))
+				joker:set_rental(true)
+				joker:juice_up()
+				G.GAME.blind:wiggle()
+			end
 		end
 	end,
 }
@@ -1083,7 +1080,7 @@ local vermillion_virus = {
 		local idx
 		--Check for eligible cards (not eternal and not immune)
 		for i = 1, #G.jokers.cards do
-			if not G.jokers.cards[i].config.center.immune_to_vermillion and not G.jokers.cards[i].ability.eternal then
+			if not G.jokers.cards[i].config.center.immune_to_vermillion and not SMODS.is_eternal(G.jokers.cards[i]) then
 				eligible_cards[#eligible_cards + 1] = G.jokers.cards[i]
 			end
 		end
